@@ -3,6 +3,7 @@ import sys
 
 from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow
+from PyQt6 import QtGui
 
 
 class App(QMainWindow):
@@ -20,7 +21,7 @@ class App(QMainWindow):
 
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
@@ -35,9 +36,11 @@ class App(QMainWindow):
         self.arrayPainter = PaintWidget(array=arr, parent=self)
 
         self.arrayPainter.move(0, 0)
-        self.arrayPainter.resize(self.width, self.height)
 
         self.show()
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        self.arrayPainter.resize(self.size().width(), self.size().height())
 
 
 class PaintColors:
@@ -46,11 +49,12 @@ class PaintColors:
 
 
 class PaintWidget(QWidget):
+
     def __init__(self, array, parent=None):
         super().__init__(parent)
         self.array = array
 
-    def paintEvent(self, event):
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         qp = QPainter(self)
         qp.setPen(QColor(0, 0, 0))
 
@@ -72,4 +76,4 @@ class PaintWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()
-    sys.exit(app.exec())
+    app.exec()
