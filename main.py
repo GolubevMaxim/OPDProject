@@ -1,16 +1,23 @@
-import random
 import sys
+from typing import Optional
 
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow
 from PyQt6 import QtGui
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFrame
+
+from paintWidget import PaintWidget
 
 
 class App(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, n=10):
         super().__init__()
-        self.arrayPainter = None
+
+        self.n = n
+
+        self.mainFrame: Optional[QFrame] = None
+        self.arrayPainter: Optional[PaintWidget] = None
+
         self.title = 'OPD Project'
 
         # screen settings
@@ -25,6 +32,9 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
+        self.mainFrame = QFrame(parent=self)
+        self.mainFrame.setGeometry(0, 0, self.width, int(self.height * 0.9))
+
         # Set window background color
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -32,48 +42,17 @@ class App(QMainWindow):
         self.setPalette(p)
 
         # Add paint widget and paint
-        arr = [[random.randint(0, 1) for _ in range(10)] for _ in range(10)]
-        self.arrayPainter = PaintWidget(array=arr, parent=self)
-
-        self.arrayPainter.move(0, 0)
+        arr = [[1 for _ in range(self.n)] for _ in range(self.n)]
+        self.arrayPainter = PaintWidget(array=arr, parent=self.mainFrame)
 
         self.show()
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
-        self.arrayPainter.resize(self.size().width(), self.size().height())
-
-
-class PaintColors:
-    carColor = QColor(80, 80, 80)
-    emptyColor = QColor(255, 255, 255)
-
-
-class PaintWidget(QWidget):
-
-    def __init__(self, array, parent=None):
-        super().__init__(parent)
-        self.array = array
-
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        qp = QPainter(self)
-        qp.setPen(QColor(0, 0, 0))
-
-        size = self.size()
-
-        # Draw array
-        for i, row in enumerate(self.array):
-            for j, elem in enumerate(row):
-                qp.setBrush(PaintColors.carColor if elem else PaintColors.emptyColor)
-
-                qp.drawRect(
-                    int((i / len(self.array)) * size.width()),
-                    int((j / len(self.array)) * size.height()),
-                    int(((i + 1) / len(self.array)) * size.width()),
-                    int(((j + 1) / len(self.array)) * size.height())
-                )
+        self.mainFrame.resize(self.size().width(), int(self.size().height() * 0.9))
+        self.arrayPainter.resize(self.mainFrame.size())
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()
-    app.exec()
+    sys.exit(app.exec())
