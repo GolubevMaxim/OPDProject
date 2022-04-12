@@ -1,4 +1,5 @@
 from placeTypes import PlaceTypes
+from collections import deque
 from place import Place
 
 
@@ -9,7 +10,11 @@ def calculateDistance(place: Place, car_place, lst) -> list[list[float]]:
     dist = [[float("inf") for _ in range(len(lst[i]))] for i in range(len(lst))]
     dist[y][x] = 0
 
-    def go(x, y):
+    q = deque()
+    q.append([x, y])
+
+    while len(q) != 0:
+        x, y = q.popleft()
         delta = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
         for dx, dy in delta:
@@ -19,9 +24,7 @@ def calculateDistance(place: Place, car_place, lst) -> list[list[float]]:
             if 0 <= nx < len(dist[0]) and 0 <= ny < len(dist):
                 if dist[y][x] + 1 < dist[ny][nx] and lst[ny][nx] != PlaceTypes.blocked:
                     dist[ny][nx] = dist[y][x] + 1
-                    go(nx, ny)
-
-    go(x, y)
+                    q.append([nx, ny])
 
     lst[car_place.y][car_place.x] = PlaceTypes.full
 
@@ -61,7 +64,7 @@ class Algorithm:
     def moveAlgorithm(self, car_pos: Place, edc=0) -> None:
         free_place = self.empty_places[0]
 
-        dist = calculateDistance(free_place, car_pos, places)
+        dist = calculateDistance(free_place, car_pos, self.places)
 
         deltas = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
 
@@ -70,7 +73,7 @@ class Algorithm:
 
             if 0 <= new_pos.x < len(dist[0]) and 0 <= new_pos.y < len(dist):
                 if dist[new_pos.y][new_pos.x] + self.global_move_price[car_pos.y][car_pos.x][edc] + 1 < \
-                        self.global_move_price[new_pos.y][new_pos.x][delta_index] and places[new_pos.y][
+                        self.global_move_price[new_pos.y][new_pos.x][delta_index] and self.places[new_pos.y][
                               new_pos.x] != PlaceTypes.blocked:
 
                     self.global_move_price[new_pos.y][new_pos.x][delta_index] = dist[new_pos.y][new_pos.x] + \
@@ -95,14 +98,14 @@ class Algorithm:
 
                     self.save_way[new_pos.y][new_pos.x][delta_index] = ans
 
-                    places[free_place.y][free_place.x] = PlaceTypes.full
-                    places[car_pos.y][car_pos.x] = PlaceTypes.empty
+                    self.places[free_place.y][free_place.x] = PlaceTypes.full
+                    self.places[car_pos.y][car_pos.x] = PlaceTypes.empty
                     self.empty_places[0] = car_pos
 
                     self.moveAlgorithm(new_pos, delta_index)
 
-                    places[free_place.y][free_place.x] = PlaceTypes.empty
-                    places[car_pos.y][car_pos.x] = PlaceTypes.full
+                    self.places[free_place.y][free_place.x] = PlaceTypes.empty
+                    self.places[car_pos.y][car_pos.x] = PlaceTypes.full
                     self.empty_places[0] = free_place
 
     def buildAnswer(self):
@@ -120,11 +123,12 @@ class Algorithm:
                     min_price = price
                     min_ind = i
 
-            ans.append(self.save_way[p.y][p.x][min_ind])
+            for delta in self.save_way[p.y][p.x][min_ind][:]:
+                ans = [delta] + ans
 
             p += deltas[min_ind]
 
-        print(*ans)
+        return ans
 
 
 if __name__ == "__main__":
@@ -138,4 +142,6 @@ if __name__ == "__main__":
     car_pos = Place(2, 1)
     exit_pos = Place(0, 0)
 
-    Algorithm(places, exit_pos, car_pos).buildAnswer()
+    alg = Algorithm(places, exit_pos, car_pos)
+    alg.run()
+    alg.buildAnswer()

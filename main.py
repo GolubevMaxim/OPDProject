@@ -13,9 +13,12 @@ from algorithm import Algorithm
 
 class App(QMainWindow):
 
-    def __init__(self, n=4):
+    def __init__(self, n=8):
         super().__init__()
 
+        self.current_step = None
+        self.playButton = None
+        self.steps = None
         self.buttonPanel = None
         self.n = n
 
@@ -42,9 +45,9 @@ class App(QMainWindow):
         self.buttonPanel = QFrame(parent=self)
         self.buttonPanel.setGeometry(0, int(self.height * 0.9), self.width, int(self.height * 0.1))
 
-        playButton = QPushButton("start", parent=self.buttonPanel)
-        playButton.setGeometry(0, 0, self.width, int(self.height * 0.1))
-        playButton.clicked.connect(self.startButtonPressed)
+        self.playButton = QPushButton("start", parent=self.buttonPanel)
+        self.playButton.setGeometry(0, 0, self.width, int(self.height * 0.1))
+        self.playButton.clicked.connect(self.startButtonPressed)
 
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -68,6 +71,29 @@ class App(QMainWindow):
         places = [[0 if elem == 0 else 1 for elem in line] for line in self.arrayPainter.array]
         alg = Algorithm(places, exit_place, car_place)
         alg.run()
+
+        self.current_step = 0
+        self.steps = alg.buildAnswer()
+        print(self.steps)
+
+        self.playButton.clicked.disconnect(self.startButtonPressed)
+        self.playButton.clicked.connect(self.nextStep)
+        self.playButton.setText("next")
+
+    def nextStep(self):
+        free_place = None
+
+        for i in range(len(self.arrayPainter.array)):
+            for j in range(len(self.arrayPainter.array[i])):
+                if self.arrayPainter.array[i][j] == 0:
+                    free_place = Place(j, i)
+
+        delta = self.steps[self.current_step]
+        next_place = free_place + delta
+        self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_place.y][next_place.x] = \
+            self.arrayPainter.array[next_place.y][next_place.x], self.arrayPainter.array[free_place.y][free_place.x]
+        self.arrayPainter.repaint()
+        self.current_step += 1
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         self.mainFrame.resize(self.size().width(), int(self.size().height() * 0.9))
