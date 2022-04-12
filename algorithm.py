@@ -55,6 +55,7 @@ class Algorithm:
 
         self.empty_places = findEmptyPlaces(places)
 
+    def run(self):
         self.moveAlgorithm(self.car_position)
 
     def moveAlgorithm(self, car_pos: Place, edc=0) -> None:
@@ -126,14 +127,15 @@ class Algorithm:
         print(*ans)
 
 
-places = [
-    [1, 1, 1, 1],
-    [1, 1, 1, 1],
-    [1, 1, 1, 1],
-    [1, 1, 0, 1]
-]
+if __name__ == "__main__":
+    places = [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 0, 1]
+    ]
 
-car_pos = Place(2, 1)
-exit_pos = Place(0, 0)
+    car_pos = Place(2, 1)
+    exit_pos = Place(0, 0)
 
-Algorithm(places, exit_pos, car_pos).buildAnswer()
+    Algorithm(places, exit_pos, car_pos).buildAnswer()

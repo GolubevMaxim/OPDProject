@@ -7,7 +7,7 @@ class PaintColors:
     carColor = QColor(80, 80, 80)
     emptyColor = QColor(255, 255, 255)
     targetCarColor = QColor(200, 0, 0)
-    liftColor = QColor(0, 200, 0)
+    exitColor = QColor(0, 200, 0)
 
 
 class PaintWidget(QWidget):
@@ -21,7 +21,7 @@ class PaintWidget(QWidget):
             list_index_x = int(event.position().x() * len(self.array) // self.size().width())
             list_index_y = int(event.position().y() * len(self.array) // self.size().height())
 
-            self.array[list_index_x][list_index_y] = (self.array[list_index_x][list_index_y] + 1) % 4
+            self.array[list_index_y][list_index_x] = (self.array[list_index_y][list_index_x] + 1) % 4
             self.repaint()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
@@ -30,9 +30,8 @@ class PaintWidget(QWidget):
 
         size = self.size()
 
-        # Draw array
-        for i, row in enumerate(self.array):
-            for j, elem in enumerate(row):
+        for j, row in enumerate(self.array):
+            for i, elem in enumerate(row):
 
                 color = PaintColors.emptyColor
                 if elem == 0:
@@ -42,7 +41,7 @@ class PaintWidget(QWidget):
                 elif elem == 2:
                     color = PaintColors.targetCarColor
                 elif elem == 3:
-                    color = PaintColors.liftColor
+                    color = PaintColors.exitColor
 
                 qp.setBrush(color)
 
