@@ -13,7 +13,7 @@ from algorithm import Algorithm
 
 class App(QMainWindow):
 
-    def __init__(self, n=8):
+    def __init__(self, n=4):
         super().__init__()
 
         self.current_step = None

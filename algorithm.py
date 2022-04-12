@@ -1,3 +1,5 @@
+import copy
+
 from placeTypes import PlaceTypes
 from collections import deque
 from place import Place
@@ -73,8 +75,8 @@ class Algorithm:
 
             if 0 <= new_pos.x < len(dist[0]) and 0 <= new_pos.y < len(dist):
                 if dist[new_pos.y][new_pos.x] + self.global_move_price[car_pos.y][car_pos.x][edc] + 1 < \
-                        self.global_move_price[new_pos.y][new_pos.x][delta_index] and self.places[new_pos.y][
-                              new_pos.x] != PlaceTypes.blocked:
+                        self.global_move_price[new_pos.y][new_pos.x][delta_index] and \
+                        self.places[new_pos.y][new_pos.x] != PlaceTypes.blocked:
 
                     self.global_move_price[new_pos.y][new_pos.x][delta_index] = dist[new_pos.y][new_pos.x] + \
                                                                            self.global_move_price[car_pos.y][car_pos.x][
@@ -112,23 +114,52 @@ class Algorithm:
         deltas = [Place(-1, 0), Place(1, 0), Place(0, -1), Place(0, 1)]
 
         ans = []
+        final_ans = []
         p = self.exit_position
 
-        while p != self.car_position:
-            min_price, min_ind = float("inf"), - 1
+        end_state = copy.deepcopy(self.places)
+        end_state[self.exit_position.y][self.exit_position.x] = 2
+        [print(*i) for i in end_state]
 
-            for i in range(4):
-                price = self.global_move_price[p.y][p.x][i]
-                if price < min_price:
-                    min_price = price
-                    min_ind = i
+        empty_place = None
+        for i in range(len(end_state)):
+            for j in range(len(end_state[i])):
+                if end_state[i][j] == 0:
+                    empty_place = Place(j, i)
 
-            for delta in self.save_way[p.y][p.x][min_ind][:]:
-                ans = [delta] + ans
+        min_price, min_ind = float("inf"), - 1
 
-            p += deltas[min_ind]
+        for i in range(4):
+            price = self.global_move_price[p.y][p.x][i]
+            if price < min_price:
+                min_price = price
+                min_ind = i
 
-        return ans
+        dt = deltas[min_ind]
+
+        while True:
+            for delta in self.save_way[p.y][p.x][deltas.index(dt)][:]:
+                ans.append(delta)
+
+                print(f"undo: {delta}")
+
+                end_state[empty_place.y - delta.y][empty_place.x - delta.x], end_state[empty_place.y][empty_place.x] = \
+                    end_state[empty_place.y][empty_place.x], end_state[empty_place.y - delta.y][empty_place.x - delta.x]
+                empty_place += Place(-delta.x, -delta.y)
+
+                final_ans = [delta] + final_ans
+
+            car_place = None
+            for i in range(len(end_state)):
+                for j in range(len(end_state[i])):
+                    if end_state[i][j] == 2:
+                        car_place = Place(j, i)
+
+            dt = Place(empty_place.x - car_place.x, empty_place.y - car_place.y)
+            if car_place == self.car_position:
+                break
+
+        return final_ans[1::]
 
 
 if __name__ == "__main__":
