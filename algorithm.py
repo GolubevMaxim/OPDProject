@@ -55,6 +55,7 @@ class Algorithm:
                                   for line in range(len(places))]
 
         self.save_way = [[[None for _ in range(4)] for _ in range(len(places[line]))] for line in range(len(places))]
+        self.save_final_state = [None for _ in range(4)]
 
         self.global_move_price[self.car_position.y][self.car_position.x] = [0, 0, 0, 0]
 
@@ -104,6 +105,9 @@ class Algorithm:
                     self.places[car_pos.y][car_pos.x] = PlaceTypes.empty
                     self.empty_places[0] = car_pos
 
+                    if new_pos == self.exit_position:
+                        self.save_final_state[delta_index] = copy.deepcopy(self.places)
+
                     self.moveAlgorithm(new_pos, delta_index)
 
                     self.places[free_place.y][free_place.x] = PlaceTypes.empty
@@ -115,11 +119,20 @@ class Algorithm:
 
         ans = []
         final_ans = []
-        p = self.exit_position
 
-        end_state = copy.deepcopy(self.places)
+        car_place = self.exit_position
+
+        min_price, min_ind = float("inf"), - 1
+
+        for i in range(4):
+            price = self.global_move_price[car_place.y][car_place.x][i]
+            if price < min_price:
+                min_price = price
+                min_ind = i
+
+        dt = deltas[min_ind]
+        end_state = self.save_final_state[deltas.index(dt)]
         end_state[self.exit_position.y][self.exit_position.x] = 2
-        [print(*i) for i in end_state]
 
         empty_place = None
         for i in range(len(end_state)):
@@ -127,21 +140,9 @@ class Algorithm:
                 if end_state[i][j] == 0:
                     empty_place = Place(j, i)
 
-        min_price, min_ind = float("inf"), - 1
-
-        for i in range(4):
-            price = self.global_move_price[p.y][p.x][i]
-            if price < min_price:
-                min_price = price
-                min_ind = i
-
-        dt = deltas[min_ind]
-
         while True:
-            for delta in self.save_way[p.y][p.x][deltas.index(dt)][:]:
+            for delta in self.save_way[car_place.y][car_place.x][deltas.index(dt)][:]:
                 ans.append(delta)
-
-                print(f"undo: {delta}")
 
                 end_state[empty_place.y - delta.y][empty_place.x - delta.x], end_state[empty_place.y][empty_place.x] = \
                     end_state[empty_place.y][empty_place.x], end_state[empty_place.y - delta.y][empty_place.x - delta.x]
@@ -149,17 +150,17 @@ class Algorithm:
 
                 final_ans = [delta] + final_ans
 
-            car_place = None
             for i in range(len(end_state)):
                 for j in range(len(end_state[i])):
                     if end_state[i][j] == 2:
                         car_place = Place(j, i)
 
             dt = Place(empty_place.x - car_place.x, empty_place.y - car_place.y)
+
             if car_place == self.car_position:
                 break
 
-        return final_ans[1::]
+        return final_ans[::]
 
 
 if __name__ == "__main__":

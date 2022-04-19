@@ -13,7 +13,7 @@ from algorithm import Algorithm
 
 class App(QMainWindow):
 
-    def __init__(self, n=4):
+    def __init__(self, n=10):
         super().__init__()
 
         self.current_step = None
@@ -74,7 +74,6 @@ class App(QMainWindow):
 
         self.current_step = 0
         self.steps = alg.buildAnswer()
-        print(self.steps)
 
         self.playButton.clicked.disconnect(self.startButtonPressed)
         self.playButton.clicked.connect(self.nextStep)
