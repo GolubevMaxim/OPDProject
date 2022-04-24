@@ -69,10 +69,22 @@ class App(QMainWindow):
                 if self.arrayPainter.array[i][j] == 3:
                     exit_place = Place(j, i)
 
+        array = []
+        for line in self.arrayPainter.array:
+            array.append([])
+            for elem in line:
+                value = 1
+                if elem == 0:
+                    value = 0
+                if elem == 4:
+                    value = 2
+
+                array[-1].append(value)
+
         places = Parking(
             len(self.arrayPainter.array),
             len(self.arrayPainter.array),
-            [[0 if elem == 0 else 1 for elem in line] for line in self.arrayPainter.array]
+            array
         )
 
         alg = Algorithm(places, exit_place, car_place)

@@ -17,3 +17,6 @@ class Parking:
 
     def __setitem__(self, place: Place, value: Any) -> None:
         self.places[place.y][place.x] = value
+
+    def check_existence(self, place: Place) -> bool:
+        return 0 <= place.x < self.width and 0 <= place.y < self.height
