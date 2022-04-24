@@ -9,11 +9,12 @@ from paintWidget import PaintWidget
 
 from place import Place
 from algorithm import Algorithm
+from parking import Parking
 
 
 class App(QMainWindow):
 
-    def __init__(self, n=10):
+    def __init__(self, n=4):
         super().__init__()
 
         self.current_step = None
@@ -68,7 +69,12 @@ class App(QMainWindow):
                 if self.arrayPainter.array[i][j] == 3:
                     exit_place = Place(j, i)
 
-        places = [[0 if elem == 0 else 1 for elem in line] for line in self.arrayPainter.array]
+        places = Parking(
+            len(self.arrayPainter.array),
+            len(self.arrayPainter.array),
+            [[0 if elem == 0 else 1 for elem in line] for line in self.arrayPainter.array]
+        )
+
         alg = Algorithm(places, exit_place, car_place)
         alg.run()
 
