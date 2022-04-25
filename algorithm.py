@@ -11,23 +11,23 @@ from place import Place
 def calculateDistance(place: Place, car_place: Place, parking_places: Parking) -> Parking:
     parking_places[car_place] = PlaceTypes.blocked
 
-    min_distance = Parking(
+    min_distance: Parking = Parking(
         parking_places.width,
         parking_places.height,
         [[float("inf") for _ in range(parking_places.width)] for _ in range(parking_places.height)]
     )
 
-    min_distance[place] = 0
+    min_distance[place]: int = 0
 
-    q = deque()
+    q: deque = deque()
     q.append(place)
 
     while len(q) != 0:
         current_place: Place = q.popleft()
-        deltas = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
+        deltas: list[Place] = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
 
         for delta in deltas:
-            new_place = current_place + delta
+            new_place: Place = current_place + delta
 
             if min_distance.check_existence(new_place) and parking_places[new_place] != PlaceTypes.blocked:
                 if min_distance[current_place] + 1 < min_distance[new_place]:
@@ -40,7 +40,7 @@ def calculateDistance(place: Place, car_place: Place, parking_places: Parking) -
 
 
 def findEmptyPlaces(parking: Parking) -> list[Place]:
-    empty_places = []
+    empty_places: list[Place] = []
 
     for y in range(parking.height):
         for x in range(parking.width):
@@ -51,14 +51,14 @@ def findEmptyPlaces(parking: Parking) -> list[Place]:
 
 
 def save_path(distance: Parking, end_place: Place, delta: Place) -> list[Place]:
-    path = [-delta]
-    current_place = end_place
-    count = distance[end_place]
+    path: list[Place] = [-delta]
+    current_place: Place = end_place
+    count: int = distance[end_place]
 
     while count != 0:
-        deltas = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
+        deltas: list[Place] = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
         for _delta in deltas:
-            new_place = current_place + _delta
+            new_place: Place = current_place + _delta
 
             if distance.check_existence(new_place):
                 if distance[new_place] == count - 1:
@@ -71,17 +71,17 @@ def save_path(distance: Parking, end_place: Place, delta: Place) -> list[Place]:
 
 class Algorithm:
     def __init__(self, parking: Parking, exit_place: Place, car_place: Place) -> None:
-        self.parking = parking
-        self.exit_place = exit_place
-        self.car_place = car_place
+        self.parking: Parking = parking
+        self.exit_place: Place = exit_place
+        self.car_place: Place = car_place
 
-        self.global_move_price = Parking(
+        self.global_move_price: Parking = Parking(
             parking.width,
             parking.height,
             [[[float("inf") for _ in range(4)] for _ in range(parking.width)] for _ in range(parking.height)]
         )
 
-        self.save_way = Parking(
+        self.save_way: Parking = Parking(
             parking.width,
             parking.height,
             [[[None for _ in range(4)] for _ in range(parking.width)] for _ in range(parking.height)]
@@ -91,20 +91,20 @@ class Algorithm:
 
         self.global_move_price[self.car_place] = [0, 0, 0, 0]
 
-        self.empty_places = findEmptyPlaces(parking)
+        self.empty_places: list[Place] = findEmptyPlaces(parking)
 
     def run(self) -> None:
         self.moveAlgorithm(self.car_place)
 
     def moveAlgorithm(self, car_place: Place, edc=0) -> None:
-        free_place = self.empty_places[0]
+        free_place: Place = self.empty_places[0]
 
-        distance = calculateDistance(free_place, car_place, self.parking)
+        distance: Parking = calculateDistance(free_place, car_place, self.parking)
 
-        deltas = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
+        deltas: list[Place] = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
 
         for delta_index, delta in enumerate(deltas):
-            new_place = car_place + delta
+            new_place: Place = car_place + delta
 
             if distance.check_existence(new_place) and self.parking[new_place] != PlaceTypes.blocked:
                 if distance[new_place] + self.global_move_price[car_place][edc] + 1 \
@@ -129,11 +129,11 @@ class Algorithm:
                     self.empty_places[0] = free_place
 
     def buildAnswer(self) -> list[Place]:
-        deltas = [Place(-1, 0), Place(1, 0), Place(0, -1), Place(0, 1)]
+        deltas: list[Place] = [Place(-1, 0), Place(1, 0), Place(0, -1), Place(0, 1)]
 
-        final_ans = []
+        final_ans: list[Place] = []
 
-        car_place = self.exit_place
+        car_place: Place = self.exit_place
 
         min_price, min_ind = float("inf"), - 1
 
@@ -143,8 +143,8 @@ class Algorithm:
                 min_price = price
                 min_ind = i
 
-        dt = deltas[min_ind]
-        end_state = self.save_final_state[deltas.index(dt)]
+        dt: Place = deltas[min_ind]
+        end_state: Parking = self.save_final_state[deltas.index(dt)]
         end_state[self.exit_place] = 5
 
         empty_place = None
