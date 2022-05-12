@@ -1,3 +1,4 @@
+import copy
 import sys
 from typing import Optional
 
@@ -92,6 +93,7 @@ class App(QMainWindow):
 
         self.current_step = 0
         self.steps = alg.buildAnswer()
+        print(self.steps)
 
         self.playButton.clicked.disconnect(self.startButtonPressed)
         self.playButton.clicked.connect(self.nextStep)
@@ -105,10 +107,36 @@ class App(QMainWindow):
                 if self.arrayPainter.array[i][j] == 0:
                     free_place = Place(j, i)
 
-        delta = self.steps[self.current_step]
-        next_place = free_place + delta
-        self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_place.y][next_place.x] = \
-            self.arrayPainter.array[next_place.y][next_place.x], self.arrayPainter.array[free_place.y][free_place.x]
+        next_place = self.steps[self.current_step]
+        
+        while next_place.y > free_place.y:
+            next_step = copy.deepcopy(free_place)
+            next_step.y += 1
+            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+            free_place = next_step
+
+        while next_place.y < free_place.y:
+            next_step = copy.deepcopy(free_place)
+            next_step.y -= 1
+            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+            free_place = next_step
+
+        while next_place.x > free_place.x:
+            next_step = copy.deepcopy(free_place)
+            next_step.x += 1
+            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+            free_place = next_step
+
+        while next_place.x < free_place.x:
+            next_step = copy.deepcopy(free_place)
+            next_step.x -= 1
+            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+            free_place = next_step
+
         self.arrayPainter.repaint()
         self.current_step += 1
 
