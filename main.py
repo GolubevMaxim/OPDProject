@@ -1,5 +1,7 @@
 import copy
 import sys
+
+from time import sleep
 from typing import Optional
 
 from PyQt6 import QtGui
@@ -15,9 +17,10 @@ from parking import Parking
 
 class App(QMainWindow):
 
-    def __init__(self, n=4):
+    def __init__(self, n=6):
         super().__init__()
 
+        self.price = None
         self.current_step = None
         self.playButton = None
         self.steps = None
@@ -47,7 +50,7 @@ class App(QMainWindow):
         self.buttonPanel = QFrame(parent=self)
         self.buttonPanel.setGeometry(0, int(self.height * 0.9), self.width, int(self.height * 0.1))
 
-        self.playButton = QPushButton("start", parent=self.buttonPanel)
+        self.playButton = QPushButton("generate", parent=self.buttonPanel)
         self.playButton.setGeometry(0, 0, self.width, int(self.height * 0.1))
         self.playButton.clicked.connect(self.startButtonPressed)
 
@@ -91,54 +94,74 @@ class App(QMainWindow):
         alg = Algorithm(places, exit_place, car_place)
         alg.run()
 
-        self.current_step = 0
-        self.steps = alg.buildAnswer()
-        print(self.steps)
+        self.steps, self.price = alg.buildAnswer()
 
         self.playButton.clicked.disconnect(self.startButtonPressed)
         self.playButton.clicked.connect(self.nextStep)
-        self.playButton.setText("next")
+        self.playButton.setText("start")
 
     def nextStep(self):
-        free_place = None
+        self.playButton.clicked.disconnect(self.nextStep)
 
-        for i in range(len(self.arrayPainter.array)):
-            for j in range(len(self.arrayPainter.array[i])):
-                if self.arrayPainter.array[i][j] == 0:
-                    free_place = Place(j, i)
+        current_step = 0
+        current_time = 0
 
-        next_place = self.steps[self.current_step]
-        
-        while next_place.y > free_place.y:
-            next_step = copy.deepcopy(free_place)
-            next_step.y += 1
-            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
-                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
-            free_place = next_step
+        self.playButton.setText(f"current step: {current_step}, "
+                                f"time spend: {current_time}, "
+                                f"all time:{self.price}, "
+                                f"completed: {current_time / self.price:.2f}")
 
-        while next_place.y < free_place.y:
-            next_step = copy.deepcopy(free_place)
-            next_step.y -= 1
-            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
-                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
-            free_place = next_step
+        while current_step < len(self.steps):
+            free_place = None
 
-        while next_place.x > free_place.x:
-            next_step = copy.deepcopy(free_place)
-            next_step.x += 1
-            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
-                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
-            free_place = next_step
+            for i in range(len(self.arrayPainter.array)):
+                for j in range(len(self.arrayPainter.array[i])):
+                    if self.arrayPainter.array[i][j] == 0:
+                        free_place = Place(j, i)
 
-        while next_place.x < free_place.x:
-            next_step = copy.deepcopy(free_place)
-            next_step.x -= 1
-            self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
-                self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
-            free_place = next_step
+            next_place = self.steps[current_step]
 
-        self.arrayPainter.repaint()
-        self.current_step += 1
+            if next_place.x != free_place.x:
+                current_time += 25
+            if next_place.y != free_place.y:
+                current_time += 15
+
+            while next_place.y > free_place.y:
+                next_step = copy.deepcopy(free_place)
+                next_step.y += 1
+                self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                    self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+                free_place = next_step
+
+            while next_place.y < free_place.y:
+                next_step = copy.deepcopy(free_place)
+                next_step.y -= 1
+                self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                    self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+                free_place = next_step
+
+            while next_place.x > free_place.x:
+                next_step = copy.deepcopy(free_place)
+                next_step.x += 1
+                self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                    self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+                free_place = next_step
+
+            while next_place.x < free_place.x:
+                next_step = copy.deepcopy(free_place)
+                next_step.x -= 1
+                self.arrayPainter.array[free_place.y][free_place.x], self.arrayPainter.array[next_step.y][next_step.x] = \
+                    self.arrayPainter.array[next_step.y][next_step.x], self.arrayPainter.array[free_place.y][free_place.x]
+                free_place = next_step
+
+            current_step += 1
+            self.playButton.setText(f"current step: {current_step - 1}, "
+                                    f"time spend: {current_time}, "
+                                    f"all time:{self.price}, "
+                                    f"completed: {current_time / self.price:.2f}")
+
+            self.arrayPainter.repaint()
+            sleep(1)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         self.mainFrame.resize(self.size().width(), int(self.size().height() * 0.9))

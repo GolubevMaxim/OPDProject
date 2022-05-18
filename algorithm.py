@@ -192,7 +192,7 @@ class Algorithm:
                     self.parking[car_place] = PlaceTypes.full
                     self.empty_places[0] = free_place
 
-    def buildAnswer(self) -> list[Place]:
+    def buildAnswer(self):
         deltas: list[Place] = [Place(1, 0), Place(-1, 0), Place(0, 1), Place(0, -1)]
 
         final_ans: list[Place] = []
@@ -257,4 +257,4 @@ class Algorithm:
             if car_place == self.car_place:
                 break
 
-        return final_ans
+        return final_ans, min_price
